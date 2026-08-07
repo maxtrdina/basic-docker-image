@@ -7,13 +7,19 @@ on:
 env:
   REGISTRY: ghcr.io
   GHCR_OWNER: maxtrdina
-  IMAGE_NAME: my-image-name
 
 jobs:
 
   build-push-image:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: base
+            image_name: basic-docker-image-base
+          - target: extended
+            image_name: basic-docker-image-extended
 
     permissions:
       contents: read
@@ -36,7 +42,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
       with:
-        images: ${{ env.REGISTRY }}/${{ env.GHCR_OWNER }}/${{ env.IMAGE_NAME }}
+        images: ${{ env.REGISTRY }}/${{ env.GHCR_OWNER }}/${{ matrix.image_name }}
         tags: latest
 
     - name: Build and push Docker image
@@ -45,6 +51,7 @@ jobs:
       with:
         context: .
         push: true
+        target: ${{ matrix.target }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
