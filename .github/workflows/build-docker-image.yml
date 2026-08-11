@@ -45,13 +45,23 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ env.GHCR_OWNER }}/${{ matrix.image_name }}
         tags: latest
 
-    - name: Build and push Docker image
+    - name: Build and Cache Docker image
       id: push
       uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
       with:
         context: .
-        push: true
+        push: false
         target: ${{ matrix.target }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        cache-to: type=gha
 
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        image-ref: ${{ steps.meta.outputs.tags }}
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
