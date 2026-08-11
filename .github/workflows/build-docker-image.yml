@@ -49,7 +49,7 @@ jobs:
         tags: latest
 
     - name: Build and Cache Docker image
-      id: push
+      id: build-and-cache
       uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
       with:
         context: .
@@ -61,6 +61,7 @@ jobs:
         cache-to: type=gha
 
     - name: Run Trivy vulnerability scanner
+      id: scan
       uses: aquasecurity/trivy-action@v0.36.0
       with:
         image-ref: ${{ steps.meta.outputs.tags }}
